@@ -1,0 +1,43 @@
+require('mobdebug').start('127.0.0.1')
+
+local cjson = require "cjson.safe"
+local redis = require "resty.redis"
+local red = redis:new()
+
+red:set_timeout(1000) --连接超时时间是1秒
+local ok, err = red:connect("127.0.0.1", 6379)
+if not ok then
+    ngx.say("failed to connect: ", err)
+    return
+end
+local args = ngx.req.get_uri_args()
+ngx.say(args.ticket)
+local tab={}
+tab["a"]=100
+red:set(args.ticket, cjson.encode(tab))
+local t=red:get(args.ticket)
+local ret=cjson.decode(t)
+local result=""
+ngx.header["content-type"] = "application/json";
+if (ret ~= nil) then
+  result=cjson.encode({
+      successcount="1",
+      failcount="0",
+      timestamp="",
+      result="1005",
+      errindex="0",
+      msg='',
+      data=ret})
+else
+  result=cjson.encode({
+      successcount="0",
+      failcount="1",
+      timestamp="",
+      result="1005",
+      errindex="0",
+      msg='未能根据ticket['.. args.ticket ..']找到对应的数据',
+      data=""})
+end
+ngx.say(result)
+require('mobdebug').done()
+

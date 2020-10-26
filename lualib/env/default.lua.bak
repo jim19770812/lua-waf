@@ -1,0 +1,18 @@
+--注意：文件名必须与nginx配置文件中的 set $env "和文件名保持一致";
+--如果是快乐钱包，配置文件就是 csl.lua，nginx配置文件要写成 set $env "csl";
+
+local Env={}
+
+function Env:getConfig()
+  return {
+    redis={
+      host="127.0.0.1",
+      port=6379
+    },
+    etcd={
+      url="http://127.0.0.1:2379"
+    },
+  }
+end
+
+return Env
